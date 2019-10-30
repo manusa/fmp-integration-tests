@@ -19,8 +19,8 @@ jobs:
           java-version: '11'
       - name: Checkout fabric8-maven-plugin
         run: git clone "$FMP_REPOSITORY"
-#      - name: Install fabric8-maven-plugin SNAPSHOT
-#        run: mvn -f ./fabric8-maven-plugin -B -DskipTests clean install
+      - name: Install fabric8-maven-plugin SNAPSHOT
+        run: mvn -f ./fabric8-maven-plugin -B -DskipTests clean install
 #      - name: Cache Maven Dependencies
 #        uses: actions/upload-artifact@master
 #        with:
@@ -41,5 +41,7 @@ jobs:
         run: curl -Lo minikube "$MINIKUBE_URL" && chmod +x minikube
       - name: Start minikube
         run: sudo -E ./minikube start --vm-driver=none
+      - name: Hello World Test
+        run: mvn -f ./hello-world -B clean package fabric8:build fabric8:resource fabric8:apply
 
 
