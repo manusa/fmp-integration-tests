@@ -3,9 +3,7 @@ name: Tests
 on: push
 
 env:
-  JAVA_VERSION: 11
   FMP_REPOSITORY: https://github.com/fabric8io/fabric8-maven-plugin.git
-
 
 jobs:
   generic-test:
@@ -17,8 +15,10 @@ jobs:
       - name: Setup Java 11
         uses: actions/setup-java@v1
         with:
-          java-version: "$JAVA_VERSION"
+          java-version: '11'
       - name: Checkout fabric8-maven-plugin
         run: git clone "$FMP_REPOSITORY"
+      - name: Install fabric8-maven-plugin snapshot
+        run: mvn -f ./fabric8-maven-plugin -B -Pjavaall -DskipTests clean install
 
 
