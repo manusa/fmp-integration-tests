@@ -36,10 +36,10 @@ jobs:
                 $(lsb_release -cs) \
                 stable" \
           && sudo apt-get update \
-          && sudo apt-get install docker-ce docker-ce-cli containerd.io
-      - name: Download MiniKube
+          && sudo apt-get install docker-ce docker-ce-cli
+      - name: Download minikube
         run: curl -Lo minikube "$MINIKUBE_URL" && chmod +x minikube
-      - name: Start MiniKube
+      - name: Start minikube
         run: sudo -E ./minikube start --vm-driver=none
 
 
