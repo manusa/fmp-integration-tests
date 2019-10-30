@@ -26,6 +26,17 @@ jobs:
 #        with:
 #          name: maven-dependencies
 #          path: /home/runner/.m2
+      - name: Download latest Docker Version
+        run: |
+          sudo apt-get purge docker docker-engine docker.io containerd runc \
+          && sudo rm -rf /var/lib/docker \
+          && curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - \
+          && sudo add-apt-repository \
+                "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+                $(lsb_release -cs) \
+                stable" \
+          && sudo apt-get update \
+          && sudo apt-get install docker-ce docker-ce-cli containerd.io
       - name: Download MiniKube
         run: curl -Lo minikube "$MINIKUBE_URL" && chmod +x minikube
       - name: Start MiniKube
