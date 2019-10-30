@@ -4,6 +4,7 @@ on: push
 
 env:
   FMP_REPOSITORY: https://github.com/fabric8io/fabric8-maven-plugin.git
+  MINIKUBE_URL: https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
 
 jobs:
   generic-test:
@@ -18,7 +19,16 @@ jobs:
           java-version: '11'
       - name: Checkout fabric8-maven-plugin
         run: git clone "$FMP_REPOSITORY"
-      - name: Install fabric8-maven-plugin snapshot
-        run: mvn -f ./fabric8-maven-plugin -B -Pjavaall -DskipTests clean install
+#      - name: Install fabric8-maven-plugin SNAPSHOT
+#        run: mvn -f ./fabric8-maven-plugin -B -DskipTests clean install
+#      - name: Cache Maven Dependencies
+#        uses: actions/upload-artifact@master
+#        with:
+#          name: maven-dependencies
+#          path: /home/runner/.m2
+      - name: Download MiniKube
+        run: curl -Lo minikube "$MINIKUBE_URL" && chmod +x minikube
+      - name: Start MiniKube
+        run: sudo -E ./minikube start --vm-driver=none
 
 
