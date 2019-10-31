@@ -38,7 +38,7 @@ public class MavenUtils {
 
   private static String getMavenLocation() throws IOException, InterruptedException {
     if (mavenLocation == null) {
-      final CliResult mavenVersion = CliUtils.runCommand("mvn -v");
+      final CliResult mavenVersion = CliUtils.runCommand(".." + File.separatorChar + "mvnw -v");
       if (mavenVersion.getExitCode() != 0){
         throw new IOException(String.format("Maven: [%s]", mavenVersion.getOutput()));
       }

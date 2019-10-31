@@ -52,6 +52,6 @@ jobs:
           sudo -E ./minikube start --vm-driver=none --kubernetes-version ${{ matrix.kubernetes }} \
           && sudo chmod -R a+r /home/runner/.kube /home/runner/.minikube
       - name: Install and Run Integration Tests
-        run: mvn -B clean verify
+        run: ./mvnw -B clean verify
 
 
