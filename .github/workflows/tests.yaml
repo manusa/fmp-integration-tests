@@ -4,6 +4,7 @@ on: push
 
 env:
   FMP_REPOSITORY: https://github.com/fabric8io/fabric8-maven-plugin.git
+  FMP_REVISION: master
 
 jobs:
   generic-test:
@@ -23,7 +24,7 @@ jobs:
         with:
           java-version: '11'
       - name: Checkout fabric8-maven-plugin
-        run: git clone "$FMP_REPOSITORY"
+        run: git clone "$FMP_REPOSITORY" && git checkout "$FMP_REVISION"
       - name: Install fabric8-maven-plugin SNAPSHOT
         run: mvn -f ./fabric8-maven-plugin -B -DskipTests clean install
 #      - name: Cache Maven Dependencies
