@@ -49,7 +49,7 @@ jobs:
         run: |
           sudo -E ./minikube start --vm-driver=none --kubernetes-version ${{ matrix.kubernetes }} \
           && sudo chmod -R a+r /home/runner/.kube /home/runner/.minikube
-      - name: Hello World Test
-        run: mvn -B clean package fabric8:build fabric8:resource fabric8:apply
+      - name: Install and Run Integration Tests
+        run: mvn -B clean verify
 
 

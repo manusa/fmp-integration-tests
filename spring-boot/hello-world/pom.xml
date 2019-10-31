@@ -5,13 +5,13 @@
 
 	<groupId>com.marcnuri.fmp-integration-tests</groupId>
 	<artifactId>hello-world</artifactId>
-	<name>Fabric8 :: Integration Tests :: Hello World</name>
+	<name>${global.name} :: Spring Boot :: Hello World</name>
 
 	<parent>
 		<groupId>com.marcnuri.fmp-integration-tests</groupId>
 		<artifactId>fmp-integration-tests-project</artifactId>
     <version>${revision}</version>
-		<relativePath>../pom.xml</relativePath>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
 
 	<properties>
@@ -59,6 +59,18 @@
 			<plugin>
 				<groupId>io.fabric8</groupId>
 				<artifactId>fabric8-maven-plugin</artifactId>
+				<configuration>
+					<enricher>
+						<includes>
+							<include>fmp-service</include>
+						</includes>
+						<config>
+							<fmp-service>
+								<type>NodePort</type>
+							</fmp-service>
+						</config>
+					</enricher>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
