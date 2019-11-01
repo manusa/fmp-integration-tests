@@ -10,13 +10,18 @@ import static org.hamcrest.Matchers.arrayWithSize;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.startsWith;
 
 import com.marcnuri.fmpintegrationtests.docker.DockerUtils;
 import com.marcnuri.fmpintegrationtests.maven.MavenUtils;
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.ServiceList;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.File;
 import java.util.Collections;
+import java.util.Optional;
 import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.InvocationRequest;
 import org.apache.maven.shared.invoker.InvocationResult;
@@ -81,6 +86,23 @@ class HelloWorldITCase {
     assertThat(new File(metaInfDirectory, "fabric8/openshift/hello-world-deploymentconfig.yml"). exists(), equalTo(true));
     assertThat(new File(metaInfDirectory, "fabric8/openshift/hello-world-route.yml"). exists(), equalTo(true));
     assertThat(new File(metaInfDirectory, "fabric8/openshift/hello-world-service.yml"). exists(), equalTo(true));
+  }
+
+  @Test
+  @Order(3)
+  void fabric8Apply_zeroConf_shouldApplyResources() throws Exception {
+    // When
+    final InvocationResult invocationResult = MavenUtils.execute(mavenRequest("fabric8:apply"));
+    // Then
+    assertThat(invocationResult.getExitCode(), Matchers.equalTo(0));
+    final Optional<Pod> pod = kubernetesClient.pods().list().getItems().stream()
+        .filter(p -> p.getMetadata().getName().startsWith("hello-world"))
+        .findFirst();
+    assertThat(pod.isPresent(), equalTo(true));
+    assertThat(pod.get().getMetadata().getName(), startsWith("hello-world"));
+    assertThat(pod.get().getMetadata().getLabels(), hasEntry("app", "hello-world"));
+    assertThat(pod.get().getMetadata().getLabels(), hasEntry("provider", "fabric8"));
+    final ServiceList serviceList = kubernetesClient.services().list();
   }
 
   private static InvocationRequest mavenRequest(String goal) {
