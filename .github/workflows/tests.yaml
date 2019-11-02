@@ -64,7 +64,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
       - name: Setup OpenShift
-        uses: manusa/actions-setup-openshift@master
+        uses: manusa/actions-setup-openshift@v1.0.1
         with:
           oc version: 'v3.11.0'
       - name: Setup Java 11
@@ -79,8 +79,8 @@ jobs:
           && cd ..
       - name: Install fabric8-maven-plugin SNAPSHOT
         run: mvn -f ./fabric8-maven-plugin -B -DskipTests clean install
-      - name: Hello World Test
-        run: mvn -B clean package fabric8:build fabric8:resource fabric8:apply
+      - name: Install and Run Integration Tests
+        run: ./mvnw -B clean verify
 
 
 
