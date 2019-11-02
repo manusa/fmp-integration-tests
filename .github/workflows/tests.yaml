@@ -61,26 +61,26 @@ jobs:
         uses: manusa/actions-setup-minishift@master
         with:
           minishift version: 'v1.34.1'
-#      - name: Virtualbox
+      - name: Virtualbox
+        run: |
+          wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add - \\
+          && sudo apt-get update \
+          && sudo apt-get install virtualbox-6.0
+#      - name: KVM
 #        run: |
-#          curl -Lo vbox "https://download.virtualbox.org/virtualbox/6.0.14/VirtualBox-6.0.14-133895-Linux_amd64.run" \
-#          && chmod +x vbox \
-#          && sudo ./vbox
-      - name: KVM
-        run: |
-          sudo apt update \
-          && sudo apt install qemu-kvm libvirt-daemon libvirt-daemon-system \
-          && sudo usermod -a -G libvirt $(whoami) \
-          && newgrp libvirt \
-          && sudo curl -L https://github.com/dhiltgen/docker-machine-kvm/releases/download/v0.10.0/docker-machine-driver-kvm-ubuntu16.04 -o /usr/local/bin/docker-machine-driver-kvm \
-          && sudo chmod +x /usr/local/bin/docker-machine-driver-kvm \
-          && sudo systemctl start libvirtd \
-          && sudo virsh net-autostart default
-      - name: CHECK -DELETE-
-        run: |
-          sudo service libvirtd status
+#          sudo apt update \
+#          && sudo apt install qemu-kvm libvirt-daemon libvirt-daemon-system \
+#          && sudo usermod -a -G libvirt $(whoami) \
+#          && newgrp libvirt \
+#          && sudo curl -L https://github.com/dhiltgen/docker-machine-kvm/releases/download/v0.10.0/docker-machine-driver-kvm-ubuntu16.04 -o /usr/local/bin/docker-machine-driver-kvm \
+#          && sudo chmod +x /usr/local/bin/docker-machine-driver-kvm \
+#          && sudo systemctl start libvirtd \
+#          && sudo virsh net-autostart default
+#      - name: CHECK -DELETE-
+#        run: |
+#          sudo service libvirtd status
       - name: Start Minishift
-        run: sudo -E env "PATH=$PATH" minishift start
+        run:  minishift start --vm-driver virtualbox
       - name: CHECK -DELETE-
         run: minishift status
 
