@@ -57,14 +57,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v1
-      - name: Setup Minishift
-        uses: manusa/actions-setup-minishift@master
-        with:
-          minishift version: 'v1.34.1'
-      - name: Virtualbox
-        run: |
-          sudo add-apt-repository multiverse && sudo apt-get update \
-          && sudo apt install virtualbox
+#      - name: Setup Minishift
+#        uses: manusa/actions-setup-minishift@master
+#        with:
+#          minishift version: 'v1.34.1'
+#      - name: Virtualbox
+#        run: |
+#          curl -Lo vbox "https://download.virtualbox.org/virtualbox/6.0.14/VirtualBox-6.0.14-133895-Linux_amd64.run" \
+#          && chmod +x vbox \
+#          && sudo ./vbox
 #      - name: KVM
 #        run: |
 #          sudo apt update \
@@ -78,9 +79,23 @@ jobs:
 #      - name: CHECK -DELETE-
 #        run: |
 #          sudo service libvirtd status
-      - name: Start Minishift
-        run:  minishift start --vm-driver virtualbox
-      - name: CHECK -DELETE-
-        run: minishift status
+#      - name: Start Minishift
+#        run:  minishift start --vm-driver virtualbox
+#      - name: CHECK -DELETE-
+#        run: minishift status
+################ TEST DIFFERENT APPROACH
+      - name: OC
+        run: |
+          export OC_VERSION=v3.9.0 \
+          && curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl \
+          && chmod +x kubectl \
+          && sudo mv kubectl /usr/local/bin/ \
+          && export client_tools="openshift-origin-client-tools-${OC_VERSION}-${COMMIT_ID}-linux-64bit" \
+          && curl -LO https://github.com/openshift/origin/releases/download/${OC_VERSION}/${client_tools}.tar.gz \
+          && tar -xvzf ${client_tools}.tar.gz \
+          && sudo mv $PWD/${client_tools}/oc /usr/local/bin/ \
+          && rm -rf ${client_tools}.tar.gz \
+          && oc cluster up --version=${OC_VERSION} --routing-suffix="127.0.0.1.${OC_DOMAIN:-nip.io}" \
+          && oc login -u system:admin
 
 
