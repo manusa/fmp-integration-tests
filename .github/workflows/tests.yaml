@@ -86,7 +86,15 @@ jobs:
 ################ TEST DIFFERENT APPROACH
       - name: OC
         run: |
-          export OC_VERSION=v3.9.0 \
+          docker version \
+          && sudo  sed -i '/ExecStart=\/usr\/bin\/dockerd/c\ExecStart=\/usr\/bin\/dockerd -H fd:\/\/ --insecure-registry 172.30.0.0\/16' /lib/systemd/system/docker.service \
+          && sudo cat /lib/systemd/system/docker.service \
+          && sudo mount --make-shared / \
+          && sudo systemctl daemon-reload \
+          && sudo service docker restart \
+          && sudo service docker status \
+          && export OC_VERSION="v3.9.0" \
+          && export COMMIT_ID="191fece" \
           && curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl \
           && chmod +x kubectl \
           && sudo mv kubectl /usr/local/bin/ \
