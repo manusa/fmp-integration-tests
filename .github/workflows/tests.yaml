@@ -63,9 +63,8 @@ jobs:
           minishift version: 'v1.34.1'
       - name: Virtualbox
         run: |
-          wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | sudo apt-key add - \
-          && sudo apt-get update \
-          && sudo apt-get install virtualbox-6.0
+          sudo add-apt-repository multiverse && sudo apt-get update \
+          && sudo apt install virtualbox
 #      - name: KVM
 #        run: |
 #          sudo apt update \
