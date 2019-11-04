@@ -19,12 +19,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v1
+        with:
+          ref: ${{ github.ref }}
       - name: Setup Java 11
         uses: actions/setup-java@v1
         with:
           java-version: '11'
       - name: Checkout fabric8-maven-plugin
-        run: git clone "$FMP_REPOSITORY" && git checkout "$FMP_REVISION"
+        run: |
+          git clone "$FMP_REPOSITORY" \
+          && cd ./fabric8-maven-plugin \
+          && git  checkout "$FMP_REVISION" \
+          && cd ..
       - name: Install fabric8-maven-plugin SNAPSHOT
         run: mvn -f ./fabric8-maven-plugin -B -DskipTests clean install
 #      - name: Cache Maven Dependencies
@@ -49,18 +55,21 @@ jobs:
         run: |
           sudo -E ./minikube start --vm-driver=none --kubernetes-version ${{ matrix.kubernetes }} \
           && sudo chmod -R a+r /home/runner/.kube /home/runner/.minikube
-      - name: Hello World Test
-        run: mvn -B clean package fabric8:build fabric8:resource fabric8:apply
+      - name: Install and Run Integration Tests
+        run: ./mvnw -B clean verify
   openshift:
     name: Generic Test using OpenShift Cluster
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        openshift: [v3.11.0,v3.9.0]
     steps:
       - name: Checkout
         uses: actions/checkout@v1
       - name: Setup OpenShift
-        uses: manusa/actions-setup-openshift@master
+        uses: manusa/actions-setup-openshift@v1.0.1
         with:
-          oc version: 'v3.11.0'
+          oc version: ${{ matrix.openshift }}
       - name: Setup Java 11
         uses: actions/setup-java@v1
         with:
@@ -73,7 +82,9 @@ jobs:
           && cd ..
       - name: Install fabric8-maven-plugin SNAPSHOT
         run: mvn -f ./fabric8-maven-plugin -B -DskipTests clean install
-      - name: Hello World Test
-        run: mvn -B clean package fabric8:build fabric8:resource fabric8:apply
+      - name: Install and Run Integration Tests
+        run: ./mvnw -B clean verify
+
+
 
 

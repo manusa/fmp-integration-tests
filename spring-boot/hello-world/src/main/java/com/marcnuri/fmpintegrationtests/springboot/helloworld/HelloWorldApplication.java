@@ -1,4 +1,4 @@
-package com.marcnuri.fmpintegrationtests.helloworld;
+package com.marcnuri.fmpintegrationtests.springboot.helloworld;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

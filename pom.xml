@@ -6,24 +6,39 @@
   <groupId>com.marcnuri.fmp-integration-tests</groupId>
   <artifactId>fmp-integration-tests-project</artifactId>
   <version>${revision}</version>
-  <name>Fabric8 :: Integration Tests :: Parent</name>
+  <name>${global.name} :: Parent</name>
   <packaging>pom</packaging>
 
 
   <properties>
     <revision>0.0.1-SNAPSHOT</revision>
     <java.version>1.8</java.version>
-    <spring-boot.version>2.2.0.RELEASE</spring-boot.version>
+    <global.name>Fabric8 Maven Plugin :: Integration Tests</global.name>
+    <apache.maven.maven-invoker.version>3.0.1</apache.maven.maven-invoker.version>
+    <fabric8.kubernetes-client.version>4.6.1</fabric8.kubernetes-client.version>
     <fabric8.maven-plugin.version>4.4-SNAPSHOT</fabric8.maven-plugin.version>
+    <junit.version>5.5.1</junit.version>
+    <hamcrest.version>2.0.0.0</hamcrest.version>
+    <spring-boot.version>2.2.0.RELEASE</spring-boot.version>
   </properties>
 
   <modules>
-    <module>hello-world</module>
+    <module>spring-boot/hello-world</module>
     <module>it</module>
   </modules>
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>org.apache.maven.shared</groupId>
+        <artifactId>maven-invoker</artifactId>
+        <version>${apache.maven.maven-invoker.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.fabric8</groupId>
+        <artifactId>kubernetes-client</artifactId>
+        <version>${fabric8.kubernetes-client.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter</artifactId>
@@ -38,6 +53,16 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-test</artifactId>
         <version>${spring-boot.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>${junit.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>java-hamcrest</artifactId>
+        <version>${hamcrest.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
