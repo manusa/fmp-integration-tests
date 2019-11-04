@@ -10,6 +10,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.arrayWithSize;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -76,13 +77,23 @@ class ZeroConfigITCase {
         .split("\n");
     assertThat(dockerImages, arrayWithSize(greaterThanOrEqualTo(1)));
     final String[] mostRecentImage = dockerImages[0].split("\t");
-    assertThat(mostRecentImage[0], equalTo("fmp-integration-tests/zero-config"));
+    assertThat(mostRecentImage[0], endsWith("/zero-config"));
     assertThat(mostRecentImage[1], equalTo("latest"));
     assertThat(mostRecentImage[3], containsString("second"));
   }
-
   @Test
   @Order(2)
+  @Tag(KUBERENETES)
+  void fabric8Build_zeroConf_shouldCreateImageForKubernetes() throws Exception {
+    final String[] dockerImages = DockerUtils.dockerImages()
+        .replace("\r", "")
+        .split("\n");
+    final String[] mostRecentImage = dockerImages[0].split("\t");
+    assertThat(mostRecentImage[0], equalTo("fmp-integration-tests/zero-config"));
+  }
+
+  @Test
+  @Order(3)
   void fabric8Resource_zeroConf_shouldCreateResources() throws Exception {
     // When
     final InvocationResult invocationResult = MavenUtils.execute(mavenRequest("fabric8:resource"));
@@ -101,7 +112,7 @@ class ZeroConfigITCase {
   }
 
   @Test
-  @Order(3)
+  @Order(4)
   void fabric8Apply_zeroConf_shouldApplyResources() throws Exception {
     // When
     final InvocationResult invocationResult = MavenUtils.execute(mavenRequest("fabric8:apply"));
@@ -131,9 +142,8 @@ class ZeroConfigITCase {
     assertThat(servicePort.getNodePort(), nullValue());
   }
 
-
   @Test
-  @Order(4)
+  @Order(5)
   @Tag(KUBERENETES)
   void fabric8Apply_zeroConf_shouldApplyResourcesForKubernetes() {
     // When
@@ -167,8 +177,8 @@ class ZeroConfigITCase {
   }
 
   @Test
-  @Order(5)
-  void fabric8Undeploy_zeroConf_shouldDeleteAllAppliedResourcesForKubernetes() throws Exception {
+  @Order(6)
+  void fabric8Undeploy_zeroConf_shouldDeleteAllAppliedResources() throws Exception {
     // When
     final InvocationResult invocationResult = MavenUtils.execute(mavenRequest("fabric8:undeploy"));
     // Then
@@ -182,8 +192,9 @@ class ZeroConfigITCase {
   }
 
   @Test
-  @Order(6)
-  void fabric8Undeploy_zeroConf_shouldDeleteAllAppliedResources() {
+  @Order(7)
+  @Tag(KUBERENETES)
+  void fabric8Undeploy_zeroConf_shouldDeleteAllAppliedResourcesForKubernetes() {
     // When
     // #fabric8Undeploy_zeroConf_shouldDeleteAllAppliedResourcesForKubernetes asserts complete
     // Then

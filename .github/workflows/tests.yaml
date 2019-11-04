@@ -76,7 +76,7 @@ jobs:
         run: |
           git clone "$FMP_REPOSITORY" \
           && cd ./fabric8-maven-plugin \
-          && git  checkout "$FMP_REVISION" \
+          && git checkout "$FMP_REVISION" \
           && cd ..
       - name: Install fabric8-maven-plugin SNAPSHOT
         run: mvn -f ./fabric8-maven-plugin -B -DskipTests clean install

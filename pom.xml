@@ -14,6 +14,8 @@
     <revision>0.0.1-SNAPSHOT</revision>
     <java.version>1.8</java.version>
     <global.name>Fabric8 Maven Plugin :: Integration Tests</global.name>
+    <apache.maven.maven-compiler-plugin.version>3.8.1</apache.maven.maven-compiler-plugin.version>
+    <apache.maven-failsafe-plugin.version>3.0.0-M3</apache.maven-failsafe-plugin.version>
     <apache.maven.maven-invoker.version>3.0.1</apache.maven.maven-invoker.version>
     <fabric8.kubernetes-client.version>4.6.1</fabric8.kubernetes-client.version>
     <fabric8.maven-plugin.version>4.4-SNAPSHOT</fabric8.maven-plugin.version>
@@ -72,10 +74,16 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
+          <version>${apache.maven.maven-compiler-plugin.version}</version>
           <configuration>
             <source>${java.version}</source>
             <target>${java.version}</target>
           </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <version>${apache.maven-failsafe-plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.springframework.boot</groupId>
