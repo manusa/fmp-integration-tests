@@ -6,17 +6,26 @@
 package com.marcnuri.fmpintegrationtests.springboot;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.arrayWithSize;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.startsWith;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasSize;
 
 import com.marcnuri.fmpintegrationtests.docker.DockerUtils;
 import com.marcnuri.fmpintegrationtests.maven.MavenUtils;
+import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.Pod;
-import io.fabric8.kubernetes.api.model.ServiceList;
+import io.fabric8.kubernetes.api.model.PodTemplateSpec;
+import io.fabric8.kubernetes.api.model.Service;
+import io.fabric8.kubernetes.api.model.ServicePort;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
+import io.fabric8.kubernetes.api.model.apps.DeploymentSpec;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.File;
@@ -99,10 +108,52 @@ class HelloWorldITCase {
         .filter(p -> p.getMetadata().getName().startsWith("hello-world"))
         .findFirst();
     assertThat(pod.isPresent(), equalTo(true));
-    assertThat(pod.get().getMetadata().getName(), startsWith("hello-world"));
     assertThat(pod.get().getMetadata().getLabels(), hasEntry("app", "hello-world"));
     assertThat(pod.get().getMetadata().getLabels(), hasEntry("provider", "fabric8"));
-    final ServiceList serviceList = kubernetesClient.services().list();
+    final Optional<Service> service = kubernetesClient.services().list().getItems().stream()
+        .filter(s -> s.getMetadata().getName().startsWith("hello-world"))
+        .findFirst();
+    assertThat(service.isPresent(), equalTo(true));
+    assertThat(service.get().getMetadata().getLabels(), hasEntry("expose", "true"));
+    assertThat(service.get().getMetadata().getLabels(), hasEntry("app", "hello-world"));
+    assertThat(service.get().getMetadata().getLabels(), hasEntry("provider", "fabric8"));
+    assertThat(service.get().getMetadata().getLabels(), hasEntry("group", "com.marcnuri.fmp-integration-tests"));
+    assertThat(service.get().getSpec().getSelector(), hasEntry("app", "hello-world"));
+    assertThat(service.get().getSpec().getSelector(), hasEntry("provider", "fabric8"));
+    assertThat(service.get().getSpec().getSelector(), hasEntry("group", "com.marcnuri.fmp-integration-tests"));
+    assertThat(service.get().getSpec().getPorts(), hasSize(1));
+    final ServicePort servicePort = service.get().getSpec().getPorts().iterator().next() ;
+    assertThat(servicePort.getName(), equalTo("http"));
+    assertThat(servicePort.getPort(), equalTo(8080));
+    assertThat(servicePort.getNodePort(), greaterThan(0));
+    final Optional<Deployment> deployment = kubernetesClient.apps().deployments().list().getItems().stream()
+        .filter(d -> d.getMetadata().getName().startsWith("hello-world"))
+        .findFirst();
+    // Temporary work-around to be able to test both in OpenShift and Kubernetes
+    // Maven profiles should be further used to perform specific tests for each platform
+    if (deployment.isPresent()) {
+      assertThat(deployment.get().getMetadata().getLabels(), hasEntry("app", "hello-world"));
+      assertThat(deployment.get().getMetadata().getLabels(), hasEntry("provider", "fabric8"));
+      assertThat(deployment.get().getMetadata().getLabels(), hasEntry("group", "com.marcnuri.fmp-integration-tests"));
+      final DeploymentSpec deploymentSpec = deployment.get().getSpec();
+      assertThat(deploymentSpec.getReplicas(), equalTo(1));
+      assertThat(deploymentSpec.getSelector().getMatchLabels(),  hasEntry("app", "hello-world"));
+      assertThat(deploymentSpec.getSelector().getMatchLabels(), hasEntry("provider", "fabric8"));
+      assertThat(deploymentSpec.getSelector().getMatchLabels(), hasEntry("group", "com.marcnuri.fmp-integration-tests"));
+      final PodTemplateSpec ptSpec = deploymentSpec.getTemplate();
+      assertThat(ptSpec.getMetadata().getLabels(), hasEntry("app", "hello-world"));
+      assertThat(ptSpec.getMetadata().getLabels(), hasEntry("provider", "fabric8"));
+      assertThat(ptSpec.getMetadata().getLabels(), hasEntry("group", "com.marcnuri.fmp-integration-tests"));
+      assertThat(ptSpec.getSpec().getContainers(), hasSize(1));
+      final Container ptContainer = ptSpec.getSpec().getContainers().iterator().next();
+      assertThat(ptContainer.getImage(), equalTo("local/hello-world:latest"));
+      assertThat(ptContainer.getName(), equalTo("spring-boot"));
+      assertThat(ptContainer.getPorts(), hasSize(3));
+      assertThat(ptContainer.getPorts(), hasItems(allOf(
+          hasProperty("name", equalTo("http")),
+          hasProperty("containerPort", equalTo(8080))
+      )));
+    }
   }
 
   private static InvocationRequest mavenRequest(String goal) {

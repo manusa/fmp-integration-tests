@@ -60,13 +60,16 @@ jobs:
   openshift:
     name: Generic Test using OpenShift Cluster
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        openshift: [v3.11.0,v3.9.0]
     steps:
       - name: Checkout
         uses: actions/checkout@v1
       - name: Setup OpenShift
         uses: manusa/actions-setup-openshift@v1.0.1
         with:
-          oc version: 'v3.11.0'
+          oc version: ${{ matrix.openshift }}
       - name: Setup Java 11
         uses: actions/setup-java@v1
         with:
