@@ -1,4 +1,4 @@
-package com.marcnuri.fmpintegrationtests.springboot.zeroconfig;
+package com.marcnuri.fmpintegrationtests.zeroconfig.springboot;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

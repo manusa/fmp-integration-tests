@@ -11,7 +11,7 @@ package com.marcnuri.fmpintegrationtests;
 public class Tags {
 
   public static final String KUBERENETES = "Kubernetes";
-  protected static final String OPEN_SHIFT = "OpenShift";
+  public static final String OPEN_SHIFT = "OpenShift";
 
   private Tags() {}
 }

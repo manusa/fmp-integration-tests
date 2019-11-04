@@ -3,7 +3,7 @@
  *
  * Created on 2019-10-30, 13:25
  */
-package com.marcnuri.fmpintegrationtests.springboot.zeroconfig;
+package com.marcnuri.fmpintegrationtests.zeroconfig.springboot;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ZeroConfigResource {
 
   @GetMapping
-  public String helloWorld() {
+  public String zeroConfig() {
     return "Zero Config";
   }
 }

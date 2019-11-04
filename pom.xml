@@ -25,7 +25,7 @@
   </properties>
 
   <modules>
-    <module>spring-boot/zero-config</module>
+    <module>zero-config/spring-boot</module>
     <module>it</module>
   </modules>
 
