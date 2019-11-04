@@ -23,7 +23,7 @@
   </properties>
 
   <modules>
-    <module>spring-boot/hello-world</module>
+    <module>spring-boot/zero-config</module>
     <module>it</module>
   </modules>
 

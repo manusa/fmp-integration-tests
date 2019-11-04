@@ -1,5 +1,5 @@
 /*
- * HelloWorldITCase.java
+ * ZeroConfigITCase.java
  *
  * Created on 2019-10-31, 8:54
  */
@@ -11,12 +11,12 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.arrayWithSize;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
 
 import com.marcnuri.fmpintegrationtests.docker.DockerUtils;
 import com.marcnuri.fmpintegrationtests.maven.MavenUtils;
@@ -48,9 +48,9 @@ import org.junit.jupiter.api.TestMethodOrder;
  * Created by Marc Nuri <marc@marcnuri.com> on 2019-10-31.
  */
 @TestMethodOrder(OrderAnnotation.class)
-class HelloWorldITCase {
+class ZeroConfigITCase {
 
-  private static final String PROJECT_HELLO_WORLD = "spring-boot/hello-world";
+  private static final String PROJECT_ZERO_CONFIG = "spring-boot/zero-config";
 
   private KubernetesClient kubernetesClient;
 
@@ -76,7 +76,7 @@ class HelloWorldITCase {
         .split("\n");
     assertThat(dockerImages, arrayWithSize(greaterThanOrEqualTo(1)));
     final String[] mostRecentImage = dockerImages[0].split("\t");
-    assertThat(mostRecentImage[0], equalTo("local/hello-world"));
+    assertThat(mostRecentImage[0], equalTo("fmp-integration-tests/zero-config"));
     assertThat(mostRecentImage[1], equalTo("latest"));
     assertThat(mostRecentImage[3], containsString("second"));
   }
@@ -88,15 +88,16 @@ class HelloWorldITCase {
     final InvocationResult invocationResult = MavenUtils.execute(mavenRequest("fabric8:resource"));
     // Then
     assertThat(invocationResult.getExitCode(), Matchers.equalTo(0));
-    final File metaInfDirectory = new File("../spring-boot/hello-world/target/classes/META-INF");
+    final File metaInfDirectory = new File(
+        String.format("../%s/target/classes/META-INF", PROJECT_ZERO_CONFIG));
     assertThat(metaInfDirectory.exists(), equalTo(true));
     assertThat(new File(metaInfDirectory, "fabric8/kubernetes.yml"). exists(), equalTo(true));
     assertThat(new File(metaInfDirectory, "fabric8/openshift.yml"). exists(), equalTo(true));
-    assertThat(new File(metaInfDirectory, "fabric8/kubernetes/hello-world-deployment.yml"). exists(), equalTo(true));
-    assertThat(new File(metaInfDirectory, "fabric8/kubernetes/hello-world-service.yml"). exists(), equalTo(true));
-    assertThat(new File(metaInfDirectory, "fabric8/openshift/hello-world-deploymentconfig.yml"). exists(), equalTo(true));
-    assertThat(new File(metaInfDirectory, "fabric8/openshift/hello-world-route.yml"). exists(), equalTo(true));
-    assertThat(new File(metaInfDirectory, "fabric8/openshift/hello-world-service.yml"). exists(), equalTo(true));
+    assertThat(new File(metaInfDirectory, "fabric8/kubernetes/zero-config-deployment.yml"). exists(), equalTo(true));
+    assertThat(new File(metaInfDirectory, "fabric8/kubernetes/zero-config-service.yml"). exists(), equalTo(true));
+    assertThat(new File(metaInfDirectory, "fabric8/openshift/zero-config-deploymentconfig.yml"). exists(), equalTo(true));
+    assertThat(new File(metaInfDirectory, "fabric8/openshift/zero-config-route.yml"). exists(), equalTo(true));
+    assertThat(new File(metaInfDirectory, "fabric8/openshift/zero-config-service.yml"). exists(), equalTo(true));
   }
 
   @Test
@@ -107,53 +108,56 @@ class HelloWorldITCase {
     // Then
     assertThat(invocationResult.getExitCode(), Matchers.equalTo(0));
     final Optional<Pod> pod = kubernetesClient.pods().list().getItems().stream()
-        .filter(p -> p.getMetadata().getName().startsWith("hello-world"))
+        .filter(p -> p.getMetadata().getName().startsWith("zero-config"))
         .findFirst();
     assertThat(pod.isPresent(), equalTo(true));
-    assertThat(pod.get().getMetadata().getLabels(), hasEntry("app", "hello-world"));
+    assertThat(pod.get().getMetadata().getLabels(), hasEntry("app", "zero-config"));
     assertThat(pod.get().getMetadata().getLabels(), hasEntry("provider", "fabric8"));
     final Optional<Service> service = kubernetesClient.services().list().getItems().stream()
-        .filter(s -> s.getMetadata().getName().startsWith("hello-world"))
+        .filter(s -> s.getMetadata().getName().startsWith("zero-config"))
         .findFirst();
     assertThat(service.isPresent(), equalTo(true));
     assertThat(service.get().getMetadata().getLabels(), hasEntry("expose", "true"));
-    assertThat(service.get().getMetadata().getLabels(), hasEntry("app", "hello-world"));
+    assertThat(service.get().getMetadata().getLabels(), hasEntry("app", "zero-config"));
     assertThat(service.get().getMetadata().getLabels(), hasEntry("provider", "fabric8"));
     assertThat(service.get().getMetadata().getLabels(), hasEntry("group", "com.marcnuri.fmp-integration-tests"));
-    assertThat(service.get().getSpec().getSelector(), hasEntry("app", "hello-world"));
+    assertThat(service.get().getSpec().getSelector(), hasEntry("app", "zero-config"));
     assertThat(service.get().getSpec().getSelector(), hasEntry("provider", "fabric8"));
     assertThat(service.get().getSpec().getSelector(), hasEntry("group", "com.marcnuri.fmp-integration-tests"));
     assertThat(service.get().getSpec().getPorts(), hasSize(1));
     final ServicePort servicePort = service.get().getSpec().getPorts().iterator().next() ;
     assertThat(servicePort.getName(), equalTo("http"));
     assertThat(servicePort.getPort(), equalTo(8080));
-    assertThat(servicePort.getNodePort(), greaterThan(0));
+    assertThat(servicePort.getNodePort(), nullValue());
   }
 
 
   @Test
   @Order(4)
   @Tag(KUBERENETES)
-  void fabric8Apply_zeroConf_shouldApplyResourcesForKubernetes() throws Exception {
+  void fabric8Apply_zeroConf_shouldApplyResourcesForKubernetes() {
+    // When
+    // #fabric8Apply_zeroConf_shouldApplyResources asserts complete
+    // Then
     final Optional<Deployment> deployment = kubernetesClient.apps().deployments().list().getItems().stream()
-        .filter(d -> d.getMetadata().getName().startsWith("hello-world"))
+        .filter(d -> d.getMetadata().getName().startsWith("zero-config"))
         .findFirst();
     assertThat(deployment.isPresent(), equalTo(true));
-    assertThat(deployment.get().getMetadata().getLabels(), hasEntry("app", "hello-world"));
+    assertThat(deployment.get().getMetadata().getLabels(), hasEntry("app", "zero-config"));
     assertThat(deployment.get().getMetadata().getLabels(), hasEntry("provider", "fabric8"));
     assertThat(deployment.get().getMetadata().getLabels(), hasEntry("group", "com.marcnuri.fmp-integration-tests"));
     final DeploymentSpec deploymentSpec = deployment.get().getSpec();
     assertThat(deploymentSpec.getReplicas(), equalTo(1));
-    assertThat(deploymentSpec.getSelector().getMatchLabels(),  hasEntry("app", "hello-world"));
+    assertThat(deploymentSpec.getSelector().getMatchLabels(),  hasEntry("app", "zero-config"));
     assertThat(deploymentSpec.getSelector().getMatchLabels(), hasEntry("provider", "fabric8"));
     assertThat(deploymentSpec.getSelector().getMatchLabels(), hasEntry("group", "com.marcnuri.fmp-integration-tests"));
     final PodTemplateSpec ptSpec = deploymentSpec.getTemplate();
-    assertThat(ptSpec.getMetadata().getLabels(), hasEntry("app", "hello-world"));
+    assertThat(ptSpec.getMetadata().getLabels(), hasEntry("app", "zero-config"));
     assertThat(ptSpec.getMetadata().getLabels(), hasEntry("provider", "fabric8"));
     assertThat(ptSpec.getMetadata().getLabels(), hasEntry("group", "com.marcnuri.fmp-integration-tests"));
     assertThat(ptSpec.getSpec().getContainers(), hasSize(1));
     final Container ptContainer = ptSpec.getSpec().getContainers().iterator().next();
-    assertThat(ptContainer.getImage(), equalTo("local/hello-world:latest"));
+    assertThat(ptContainer.getImage(), equalTo("fmp-integration-tests/zero-config:latest"));
     assertThat(ptContainer.getName(), equalTo("spring-boot"));
     assertThat(ptContainer.getPorts(), hasSize(3));
     assertThat(ptContainer.getPorts(), hasItems(allOf(
@@ -162,10 +166,36 @@ class HelloWorldITCase {
     )));
   }
 
+  @Test
+  @Order(5)
+  void fabric8Undeploy_zeroConf_shouldDeleteAllAppliedResourcesForKubernetes() throws Exception {
+    // When
+    final InvocationResult invocationResult = MavenUtils.execute(mavenRequest("fabric8:undeploy"));
+    // Then
+    assertThat(invocationResult.getExitCode(), Matchers.equalTo(0));
+    final boolean podsExist = kubernetesClient.pods().list().getItems().stream()
+        .anyMatch(p -> p.getMetadata().getName().startsWith("zero-config"));
+    assertThat(podsExist, equalTo(false));
+    final boolean servicesExist = kubernetesClient.services().list().getItems().stream()
+        .anyMatch(s -> s.getMetadata().getName().startsWith("zero-config"));
+    assertThat(servicesExist, equalTo(false));
+  }
+
+  @Test
+  @Order(6)
+  void fabric8Undeploy_zeroConf_shouldDeleteAllAppliedResources() {
+    // When
+    // #fabric8Undeploy_zeroConf_shouldDeleteAllAppliedResourcesForKubernetes asserts complete
+    // Then
+    final boolean deploymentsExists = kubernetesClient.apps().deployments().list().getItems().stream()
+        .anyMatch(d -> d.getMetadata().getName().startsWith("zero-config"));
+    assertThat(deploymentsExists, equalTo(false));
+  }
+
   private static InvocationRequest mavenRequest(String goal) {
     final InvocationRequest invocationRequest = new DefaultInvocationRequest();
     invocationRequest.setBaseDirectory(new File("../"));
-    invocationRequest.setProjects(Collections.singletonList(PROJECT_HELLO_WORLD));
+    invocationRequest.setProjects(Collections.singletonList(PROJECT_ZERO_CONFIG));
     invocationRequest.setGoals(Collections.singletonList(goal));
     return invocationRequest;
   }
