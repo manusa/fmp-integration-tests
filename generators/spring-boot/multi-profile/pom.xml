@@ -59,4 +59,12 @@
 		</plugins>
 	</build>
 
+	<profiles>
+		<profile>
+			<id>Production</id>
+			<properties>
+				<spring.profiles.active>prod</spring.profiles.active>
+			</properties>
+		</profile>
+	</profiles>
 </project>

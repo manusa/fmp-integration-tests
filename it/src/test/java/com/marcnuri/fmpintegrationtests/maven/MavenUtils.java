@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.maven.shared.invoker.DefaultInvocationRequest;
 import org.apache.maven.shared.invoker.DefaultInvoker;
 import org.apache.maven.shared.invoker.InvocationRequest;
 import org.apache.maven.shared.invoker.InvocationResult;
@@ -25,6 +26,14 @@ public class MavenUtils {
   private static String mavenLocation;
 
   private MavenUtils() {
+  }
+
+  public static InvocationResult execute(InvocationRequestCustomizer irc)
+      throws IOException, InterruptedException, MavenInvocationException {
+
+    final InvocationRequest invocationRequest = new DefaultInvocationRequest();
+    irc.customize(invocationRequest);
+    return execute(invocationRequest);
   }
 
   public static InvocationResult execute(InvocationRequest invocationRequest)
@@ -54,5 +63,10 @@ public class MavenUtils {
     return mavenLocation;
   }
 
+  @FunctionalInterface
+  public interface InvocationRequestCustomizer {
+
+    void customize(InvocationRequest invocationRequest);
+  }
 
 }
