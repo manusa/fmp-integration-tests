@@ -19,12 +19,15 @@
     <apache.maven.maven-invoker.version>3.0.1</apache.maven.maven-invoker.version>
     <fabric8.kubernetes-client.version>4.6.1</fabric8.kubernetes-client.version>
     <fabric8.maven-plugin.version>4.4-SNAPSHOT</fabric8.maven-plugin.version>
+    <com.fasterxml.jackson.core.version>2.10.0</com.fasterxml.jackson.core.version>
+    <com.fasterxml.jackson.dataformat.yaml.version>2.10.0</com.fasterxml.jackson.dataformat.yaml.version>
     <junit.version>5.5.1</junit.version>
     <hamcrest.version>2.0.0.0</hamcrest.version>
     <spring-boot.version>2.2.0.RELEASE</spring-boot.version>
   </properties>
 
   <modules>
+    <module>generators/spring-boot/multi-profile</module>
     <module>zero-config/spring-boot</module>
     <module>it</module>
   </modules>
@@ -40,6 +43,16 @@
         <groupId>io.fabric8</groupId>
         <artifactId>kubernetes-client</artifactId>
         <version>${fabric8.kubernetes-client.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>${com.fasterxml.jackson.core.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.dataformat</groupId>
+        <artifactId>jackson-dataformat-yaml</artifactId>
+        <version>${com.fasterxml.jackson.dataformat.yaml.version}</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
