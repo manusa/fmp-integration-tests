@@ -33,12 +33,12 @@ import io.fabric8.kubernetes.api.model.apps.DeploymentSpec;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import org.apache.maven.shared.invoker.DefaultInvocationRequest;
-import org.apache.maven.shared.invoker.InvocationRequest;
 import org.apache.maven.shared.invoker.InvocationResult;
+import org.apache.maven.shared.invoker.MavenInvocationException;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -72,7 +72,7 @@ class SpringBootITCase {
   @Order(1)
   void fabric8Build_zeroConf_shouldCreateImage() throws Exception {
     // When
-    final InvocationResult invocationResult = MavenUtils.execute(mavenRequest("fabric8:build"));
+    final InvocationResult invocationResult = maven("fabric8:build");
     // Then
     assertThat(invocationResult.getExitCode(), Matchers.equalTo(0));
     final List<DockerImage> dockerImages = DockerUtils.dockerImages();
@@ -97,7 +97,7 @@ class SpringBootITCase {
   @Order(3)
   void fabric8Resource_zeroConf_shouldCreateResources() throws Exception {
     // When
-    final InvocationResult invocationResult = MavenUtils.execute(mavenRequest("fabric8:resource"));
+    final InvocationResult invocationResult = maven("fabric8:resource");
     // Then
     assertThat(invocationResult.getExitCode(), Matchers.equalTo(0));
     final File metaInfDirectory = new File(
@@ -114,9 +114,10 @@ class SpringBootITCase {
 
   @Test
   @Order(4)
+  @SuppressWarnings("OptionalGetWithoutIsPresent")
   void fabric8Apply_zeroConf_shouldApplyResources() throws Exception {
     // When
-    final InvocationResult invocationResult = MavenUtils.execute(mavenRequest("fabric8:apply"));
+    final InvocationResult invocationResult = maven("fabric8:apply");
     // Then
     assertThat(invocationResult.getExitCode(), Matchers.equalTo(0));
     final Optional<Pod> pod = kubernetesClient.pods().list().getItems().stream()
@@ -146,6 +147,7 @@ class SpringBootITCase {
   @Test
   @Order(5)
   @Tag(KUBERENETES)
+  @SuppressWarnings({"OptionalGetWithoutIsPresent", "unchecked"})
   void fabric8Apply_zeroConf_shouldApplyResourcesForKubernetes() {
     // When
     // #fabric8Apply_zeroConf_shouldApplyResources asserts complete
@@ -181,7 +183,7 @@ class SpringBootITCase {
   @Order(6)
   void fabric8Undeploy_zeroConf_shouldDeleteAllAppliedResources() throws Exception {
     // When
-    final InvocationResult invocationResult = MavenUtils.execute(mavenRequest("fabric8:undeploy"));
+    final InvocationResult invocationResult = maven("fabric8:undeploy");
     // Then
     assertThat(invocationResult.getExitCode(), Matchers.equalTo(0));
     final Optional<Pod> matchingPod = kubernetesClient.pods().list().getItems().stream()
@@ -209,11 +211,13 @@ class SpringBootITCase {
     assertThat(deploymentsExists, equalTo(false));
   }
 
-  private static InvocationRequest mavenRequest(String goal) {
-    final InvocationRequest invocationRequest = new DefaultInvocationRequest();
-    invocationRequest.setBaseDirectory(new File("../"));
-    invocationRequest.setProjects(Collections.singletonList(PROJECT_ZERO_CONFIG));
-    invocationRequest.setGoals(Collections.singletonList(goal));
-    return invocationRequest;
+  private static InvocationResult maven(String goal)
+      throws IOException, InterruptedException, MavenInvocationException {
+
+    return MavenUtils.execute(i -> {
+      i.setBaseDirectory(new File("../"));
+      i.setProjects(Collections.singletonList(PROJECT_ZERO_CONFIG));
+      i.setGoals(Collections.singletonList(goal));
+    });
   }
 }
