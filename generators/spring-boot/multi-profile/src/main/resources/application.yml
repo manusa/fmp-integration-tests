@@ -1,0 +1,11 @@
+multi-profile:
+  response: MultiProfile default
+server:
+  port: 8081
+---
+spring:
+  profiles: prod
+server:
+  port: 8080
+multi-profile:
+  response: MultiProfile prod

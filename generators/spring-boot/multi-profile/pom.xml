@@ -3,17 +3,17 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>zero-config-spring-boot</artifactId>
-	<name>${global.name} :: Zero Config :: Spring Boot</name>
+	<artifactId>generators-spring-boot-multi-profile</artifactId>
+	<name>${global.name} :: Generators :: Spring Boot :: Multi-profile</name>
 	<description>
-		Spring Boot project
+		Project to validate multi-profile spring-boot generator
 	</description>
 
 	<parent>
 		<groupId>com.marcnuri.fmp-integration-tests</groupId>
 		<artifactId>fmp-integration-tests-project</artifactId>
     <version>${revision}</version>
-		<relativePath>../../pom.xml</relativePath>
+		<relativePath>../../../pom.xml</relativePath>
 	</parent>
 
 	<dependencies>
@@ -55,18 +55,6 @@
 			<plugin>
 				<groupId>io.fabric8</groupId>
 				<artifactId>fabric8-maven-plugin</artifactId>
-				<configuration>
-<!--					<enricher>-->
-<!--						<includes>-->
-<!--							<include>fmp-service</include>-->
-<!--						</includes>-->
-<!--						<config>-->
-<!--							<fmp-service>-->
-<!--								<type>NodePort</type>-->
-<!--							</fmp-service>-->
-<!--						</config>-->
-<!--					</enricher>-->
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

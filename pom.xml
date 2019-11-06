@@ -25,6 +25,7 @@
   </properties>
 
   <modules>
+    <module>generators/spring-boot/multi-profile</module>
     <module>zero-config/spring-boot</module>
     <module>it</module>
   </modules>
