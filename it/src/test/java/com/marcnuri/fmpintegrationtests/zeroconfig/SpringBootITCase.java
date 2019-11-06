@@ -122,17 +122,17 @@ class SpringBootITCase {
     assertThat(invocationResult.getExitCode(), Matchers.equalTo(0));
     final Optional<Pod> pod = kubernetesClient.pods().list().getItems().stream()
         .filter(p -> p.getMetadata().getName().startsWith("zero-config-spring-boot"))
-        .findFirst();
-    assertThat(pod.isPresent(), equalTo(true));
-    assertThat(pod.get().getMetadata().getLabels(), hasEntry("app", "zero-config-spring-boot"));
-    assertThat(pod.get().getMetadata().getLabels(), hasEntry("provider", "fabric8"));
-    final Optional<Service> service = kubernetesClient.services().list().getItems().stream()
-        .filter(s -> s.getMetadata().getName().startsWith("zero-config-spring-boot"))
         .filter(s -> s.getMetadata().getLabels().containsKey("app"))
         .filter(s -> s.getMetadata().getLabels().get("app").equals("zero-config-spring-boot"))
         .findFirst();
+    assertThat(pod.isPresent(), equalTo(true));
+    assertThat(pod.get().getMetadata().getLabels(), hasEntry("provider", "fabric8"));
+    final Optional<Service> service = kubernetesClient.services().list().getItems().stream()
+        .filter(s -> s.getMetadata().getName().startsWith("zero-config-spring-boot"))
+        .findFirst();
     assertThat(service.isPresent(), equalTo(true));
     assertThat(service.get().getMetadata().getLabels(), hasEntry("expose", "true"));
+    assertThat(service.get().getMetadata().getLabels(), hasEntry("app", "zero-config-spring-boot"));
     assertThat(service.get().getMetadata().getLabels(), hasEntry("provider", "fabric8"));
     assertThat(service.get().getMetadata().getLabels(), hasEntry("group", "com.marcnuri.fmp-integration-tests"));
     assertThat(service.get().getSpec().getSelector(), hasEntry("app", "zero-config-spring-boot"));
