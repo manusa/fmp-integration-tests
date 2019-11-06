@@ -1,6 +1,11 @@
 name: Tests
 
-on: push
+on:
+  push:
+    branches:
+      - *
+  schedule:
+    - cron: '0 */3 * * *' # Every 3 hours
 
 env:
   FMP_REPOSITORY: https://github.com/fabric8io/fabric8-maven-plugin.git
@@ -48,13 +53,19 @@ jobs:
           && cd ..
       - name: Install fabric8-maven-plugin SNAPSHOT
         run: mvn -f ./fabric8-maven-plugin -B -DskipTests clean install
-#      - name: Cache Maven Dependencies
-#        uses: actions/upload-artifact@master
-#        with:
-#          name: maven-dependencies
-#          path: /home/runner/.m2
       - name: Install and Run Integration Tests
         run: ./mvnw -B -PKubernetes clean verify
+      - name: Consolidate reports
+        run: |
+          mkdir -P ./reports/zero-config/spring-boot \
+          && cp -R ./it/target/failsafe-reports ./reports \
+          && cp -R ./zero-config/spring-boot/target/docker ./reports/zero-config/spring-boot \
+          && cp -R ./zero-config/spring-boot/target/classes/META-INF ./reports/zero-config/spring-boot
+      - name: Save reports as artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: Test reports
+          path: ./reports
   openshift:
     name: Generic Test using OpenShift Cluster
     runs-on: ubuntu-latest
