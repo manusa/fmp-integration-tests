@@ -93,6 +93,17 @@ jobs:
         run: mvn -f ./fabric8-maven-plugin -B -DskipTests clean install
       - name: Install and Run Integration Tests
         run: ./mvnw -B -POpenShift clean verify
+      - name: Consolidate reports
+        run: |
+          mkdir -p ./reports/zero-config/spring-boot \
+          && cp -R ./it/target/failsafe-reports ./reports \
+          && cp -R ./zero-config/spring-boot/target/docker ./reports/zero-config/spring-boot \
+          && cp -R ./zero-config/spring-boot/target/classes/META-INF ./reports/zero-config/spring-boot
+      - name: Save reports as artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: Test reports (OpenShift ${{ matrix.openshift }})
+          path: ./reports
 
 
 
