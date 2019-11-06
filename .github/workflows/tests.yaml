@@ -64,7 +64,7 @@ jobs:
       - name: Save reports as artifact
         uses: actions/upload-artifact@master
         with:
-          name: Test reports
+          name: Test reports (Minikube ${{ matrix.minikube }}-${{ matrix.kubernetes }})
           path: ./reports
   openshift:
     name: Generic Test using OpenShift Cluster
