@@ -48,7 +48,8 @@ class MultiProfileITCase {
     final InvocationResult invocationResult = maven("fabric8:resource");
     // Then
     assertThat(invocationResult.getExitCode(), Matchers.equalTo(0));
-    assertKubernetesPort(8081);
+    assertPort("fabric8/kubernetes.yml", 8081);
+    assertPort("fabric8/openshift.yml", 8081);
   }
 
   @Test
@@ -57,16 +58,17 @@ class MultiProfileITCase {
     final InvocationResult invocationResult = maven("fabric8:resource", "Production");
     // Then
     assertThat(invocationResult.getExitCode(), Matchers.equalTo(0));
-    assertKubernetesPort(8080);
+    assertPort("fabric8/kubernetes.yml", 8080);
+    assertPort("fabric8/openshift.yml", 8080);
   }
 
   @SuppressWarnings({"unchecked", "OptionalGetWithoutIsPresent"})
-  private void assertKubernetesPort(int port) throws Exception {
+  private void assertPort(String yamlFile, int port) throws Exception {
     final File metaInfDirectory = new File(
         String.format("../%s/target/classes/META-INF", PROJECT_MULTI_PROFILE));
     assertThat(metaInfDirectory.exists(), equalTo(true));
     final Map<String, ?> kubernetesYaml = objectMapper
-        .readValue(new File(metaInfDirectory, "fabric8/kubernetes.yml"), Map.class);
+        .readValue(new File(metaInfDirectory, yamlFile), Map.class);
     assertThat(kubernetesYaml, hasKey("items"));
     assertThat((List<Map>) kubernetesYaml.get("items"), hasItem(hasEntry("kind", "Service")));
     final Optional<Integer> portEntry = (Optional<Integer>)((List<Map>) kubernetesYaml.get("items")).stream()
