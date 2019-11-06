@@ -57,7 +57,7 @@ jobs:
         run: ./mvnw -B -PKubernetes clean verify
       - name: Consolidate reports
         run: |
-          mkdir -P ./reports/zero-config/spring-boot \
+          mkdir -p ./reports/zero-config/spring-boot \
           && cp -R ./it/target/failsafe-reports ./reports \
           && cp -R ./zero-config/spring-boot/target/docker ./reports/zero-config/spring-boot \
           && cp -R ./zero-config/spring-boot/target/classes/META-INF ./reports/zero-config/spring-boot
