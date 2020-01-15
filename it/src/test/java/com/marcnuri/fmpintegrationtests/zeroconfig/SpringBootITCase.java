@@ -37,6 +37,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
+
 import org.apache.maven.shared.invoker.InvocationResult;
 import org.apache.maven.shared.invoker.MavenInvocationException;
 import org.hamcrest.Matchers;
@@ -190,11 +192,10 @@ class SpringBootITCase {
     final Optional<Pod> matchingPod = kubernetesClient.pods().list().getItems().stream()
         .filter(p -> p.getMetadata().getName().startsWith("zero-config-spring-boot"))
         .findAny();
-    if (matchingPod.isPresent()) {
-      final ContainerStatus lastContainerStatus = matchingPod.get().getStatus()
-          .getContainerStatuses().iterator().next();
-      assertThat(lastContainerStatus.getState().getTerminated(), notNullValue());
-    }
+    final Function<Pod, Pod> refreshPod = pod ->
+            kubernetesClient.pods().withName(pod.getMetadata().getName()).get();
+    matchingPod.map(refreshPod).ifPresent(updatedPod ->
+            assertThat(updatedPod.getMetadata().getDeletionTimestamp(), notNullValue()));
     final boolean servicesExist = kubernetesClient.services().list().getItems().stream()
         .anyMatch(s -> s.getMetadata().getName().startsWith("zero-config-spring-boot"));
     assertThat(servicesExist, equalTo(false));
