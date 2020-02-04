@@ -108,7 +108,7 @@ class SpringBootITCase {
     kubernetesClient.pods()
       .withLabel("app", "zero-config-spring-boot")
       .watch(podWatcher);
-    final Pod pod = podWatcher.await(20L, TimeUnit.SECONDS);
+    final Pod pod = podWatcher.await(30L, TimeUnit.SECONDS);
     assertThat(pod, notNullValue());
     assertThat(pod.getMetadata().getName(), startsWith("zero-config-spring-boot"));
     assertThat(pod.getMetadata().getLabels(), hasEntry("provider", "fabric8"));
