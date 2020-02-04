@@ -5,6 +5,7 @@
  */
 package com.marcnuri.fmpintegrationtests.zeroconfig;
 
+import com.marcnuri.fmpintegrationtests.PodReadyWatcher;
 import com.marcnuri.fmpintegrationtests.docker.DockerUtils;
 import com.marcnuri.fmpintegrationtests.docker.DockerUtils.DockerImage;
 import com.marcnuri.fmpintegrationtests.maven.MavenUtils;
@@ -13,7 +14,6 @@ import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentSpec;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.kubernetes.client.internal.readiness.ReadinessWatcher;
 import org.apache.maven.shared.invoker.InvocationResult;
 import org.apache.maven.shared.invoker.MavenInvocationException;
 import org.hamcrest.Matchers;
@@ -104,7 +104,7 @@ class SpringBootITCase {
     final InvocationResult invocationResult = maven("fabric8:apply");
     // Then
     assertThat(invocationResult.getExitCode(), Matchers.equalTo(0));
-    final ReadinessWatcher<Pod> podWatcher = new ReadinessWatcher<>(null);
+    final PodReadyWatcher podWatcher = new PodReadyWatcher();
     kubernetesClient.pods()
       .withLabel("app", "zero-config-spring-boot")
       .watch(podWatcher);
