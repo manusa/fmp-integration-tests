@@ -112,7 +112,7 @@ class SpringBootITCase {
     assertThat(pod, notNullValue());
     assertThat(pod.getMetadata().getName(), startsWith("zero-config-spring-boot"));
     assertThat(pod.getMetadata().getLabels(), hasEntry("provider", "fabric8"));
-    kubernetesClient.resource(pod)
+    kubernetesClient.pods().withName(pod.getMetadata().getName())
       .waitUntilCondition(conditionPod -> {
           try {
             return kubernetesClient.pods()
