@@ -5,50 +5,33 @@
  */
 package com.marcnuri.fmpintegrationtests.zeroconfig;
 
-import static com.marcnuri.fmpintegrationtests.Tags.KUBERENETES;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.endsWith;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-
 import com.marcnuri.fmpintegrationtests.docker.DockerUtils;
 import com.marcnuri.fmpintegrationtests.docker.DockerUtils.DockerImage;
 import com.marcnuri.fmpintegrationtests.maven.MavenUtils;
-import io.fabric8.kubernetes.api.model.Container;
-import io.fabric8.kubernetes.api.model.ContainerStatus;
-import io.fabric8.kubernetes.api.model.Pod;
-import io.fabric8.kubernetes.api.model.PodTemplateSpec;
-import io.fabric8.kubernetes.api.model.Service;
-import io.fabric8.kubernetes.api.model.ServicePort;
+import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentSpec;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.internal.readiness.ReadinessWatcher;
+import org.apache.maven.shared.invoker.InvocationResult;
+import org.apache.maven.shared.invoker.MavenInvocationException;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-import org.apache.maven.shared.invoker.InvocationResult;
-import org.apache.maven.shared.invoker.MavenInvocationException;
-import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestMethodOrder;
+import static com.marcnuri.fmpintegrationtests.Tags.KUBERENETES;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
 /**
  * Created by Marc Nuri <marc@marcnuri.com> on 2019-10-31.
@@ -116,32 +99,37 @@ class SpringBootITCase {
 
   @Test
   @Order(4)
-  @SuppressWarnings("OptionalGetWithoutIsPresent")
   void fabric8Apply_zeroConf_shouldApplyResources() throws Exception {
     // When
     final InvocationResult invocationResult = maven("fabric8:apply");
     // Then
     assertThat(invocationResult.getExitCode(), Matchers.equalTo(0));
-    final Optional<Pod> pod = kubernetesClient.pods().list().getItems().stream()
-        .filter(p -> p.getMetadata().getName().startsWith("zero-config-spring-boot"))
-        .filter(s -> s.getMetadata().getLabels().containsKey("app"))
-        .filter(s -> s.getMetadata().getLabels().get("app").equals("zero-config-spring-boot"))
-        .findFirst();
-    assertThat(pod.isPresent(), equalTo(true));
-    assertThat(pod.get().getMetadata().getLabels(), hasEntry("provider", "fabric8"));
-    final Optional<Service> service = kubernetesClient.services().list().getItems().stream()
-        .filter(s -> s.getMetadata().getName().startsWith("zero-config-spring-boot"))
-        .findFirst();
-    assertThat(service.isPresent(), equalTo(true));
-    assertThat(service.get().getMetadata().getLabels(), hasEntry("expose", "true"));
-    assertThat(service.get().getMetadata().getLabels(), hasEntry("app", "zero-config-spring-boot"));
-    assertThat(service.get().getMetadata().getLabels(), hasEntry("provider", "fabric8"));
-    assertThat(service.get().getMetadata().getLabels(), hasEntry("group", "com.marcnuri.fmp-integration-tests"));
-    assertThat(service.get().getSpec().getSelector(), hasEntry("app", "zero-config-spring-boot"));
-    assertThat(service.get().getSpec().getSelector(), hasEntry("provider", "fabric8"));
-    assertThat(service.get().getSpec().getSelector(), hasEntry("group", "com.marcnuri.fmp-integration-tests"));
-    assertThat(service.get().getSpec().getPorts(), hasSize(1));
-    final ServicePort servicePort = service.get().getSpec().getPorts().iterator().next() ;
+    final ReadinessWatcher<Pod> podWatcher = new ReadinessWatcher<>(null);
+    kubernetesClient.pods()
+      .withLabel("app", "zero-config-spring-boot")
+      .watch(podWatcher);
+    final Pod pod = podWatcher.await(20L, TimeUnit.SECONDS);
+    assertThat(pod, notNullValue());
+    assertThat(pod.getMetadata().getName(), startsWith("zero-config-spring-boot"));
+    assertThat(pod.getMetadata().getLabels(), hasEntry("provider", "fabric8"));
+    kubernetesClient.resource(pod)
+      .waitUntilCondition(conditionPod -> kubernetesClient.pods()
+          .withName(pod.getMetadata().getName())
+          .getLog().contains("Started ZeroConfigApplication in"),
+      10L, TimeUnit.SECONDS);
+    final Service service = kubernetesClient.services()
+      .withName("zero-config-spring-boot")
+      .waitUntilCondition(Objects::nonNull, 10L, TimeUnit.SECONDS);
+    assertThat(service, notNullValue());
+    assertThat(service.getMetadata().getLabels(), hasEntry("expose", "true"));
+    assertThat(service.getMetadata().getLabels(), hasEntry("app", "zero-config-spring-boot"));
+    assertThat(service.getMetadata().getLabels(), hasEntry("provider", "fabric8"));
+    assertThat(service.getMetadata().getLabels(), hasEntry("group", "com.marcnuri.fmp-integration-tests"));
+    assertThat(service.getSpec().getSelector(), hasEntry("app", "zero-config-spring-boot"));
+    assertThat(service.getSpec().getSelector(), hasEntry("provider", "fabric8"));
+    assertThat(service.getSpec().getSelector(), hasEntry("group", "com.marcnuri.fmp-integration-tests"));
+    assertThat(service.getSpec().getPorts(), hasSize(1));
+    final ServicePort servicePort = service.getSpec().getPorts().iterator().next() ;
     assertThat(servicePort.getName(), equalTo("http"));
     assertThat(servicePort.getPort(), equalTo(8080));
     assertThat(servicePort.getNodePort(), nullValue());
