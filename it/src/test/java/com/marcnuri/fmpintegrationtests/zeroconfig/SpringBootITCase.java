@@ -113,10 +113,17 @@ class SpringBootITCase {
     assertThat(pod.getMetadata().getName(), startsWith("zero-config-spring-boot"));
     assertThat(pod.getMetadata().getLabels(), hasEntry("provider", "fabric8"));
     kubernetesClient.resource(pod)
-      .waitUntilCondition(conditionPod -> kubernetesClient.pods()
-          .withName(pod.getMetadata().getName())
-          .getLog().contains("Started ZeroConfigApplication in"),
-      10L, TimeUnit.SECONDS);
+      .waitUntilCondition(conditionPod -> {
+          try {
+            return kubernetesClient.pods()
+              .withName(pod.getMetadata().getName())
+              .getLog().contains("Started ZeroConfigApplication in");
+          } catch (Exception ex) {
+            // Ignore error and iterate again
+          }
+          return false;
+        },
+        10L, TimeUnit.SECONDS);
     final Service service = kubernetesClient.services()
       .withName("zero-config-spring-boot")
       .waitUntilCondition(Objects::nonNull, 10L, TimeUnit.SECONDS);
