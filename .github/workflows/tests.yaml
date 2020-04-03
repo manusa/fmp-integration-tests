@@ -16,6 +16,7 @@ jobs:
     name: Generic Test using Minikube
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         minikube: [v1.5.1]
         kubernetes: [v1.16.2,v1.12.0]
@@ -56,15 +57,24 @@ jobs:
     name: Generic Test using OpenShift Cluster
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         openshift: [v3.11.0,v3.9.0]
     steps:
       - name: Free up Space
         run: |
           sudo apt list --installed
+          sudo apt-get autoremove -y 'aspnetcore.*'
+          sudo apt-get autoremove -y 'cabal-install.*'
+          sudo apt-get autoremove -y 'clang.*'
           sudo apt-get autoremove -y 'dotnet.*'
           sudo apt-get autoremove -y 'firefox.*'
+          sudo apt-get autoremove -y 'ghc.*'
           sudo apt-get autoremove -y 'google-chrome.*'
+          sudo apt-get autoremove -y 'google-cloud.*'
+          sudo apt-get autoremove -y 'heroku.*'
+          sudo apt-get autoremove -y 'libmagic.*'
+          sudo apt-get autoremove -y 'libmono.*'
           sudo apt-get autoremove -y 'linux-headers.*'
           sudo apt-get autoremove -y 'mono-.*'
           sudo apt-get autoremove -y 'mysql.*'
