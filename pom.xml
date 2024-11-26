@@ -23,7 +23,7 @@
     <com.fasterxml.jackson.dataformat.yaml.version>2.10.0</com.fasterxml.jackson.dataformat.yaml.version>
     <junit.version>5.5.1</junit.version>
     <hamcrest.version>2.0.0.0</hamcrest.version>
-    <spring-boot.version>2.2.0.RELEASE</spring-boot.version>
+    <spring-boot.version>2.5.12</spring-boot.version>
   </properties>
 
   <modules>
